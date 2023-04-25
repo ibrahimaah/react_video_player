@@ -8,7 +8,7 @@ input[type="file"] {
     z-index: -1;
   }
   
-  label {
+  label.custom-file-label {
     display: inline-block;
     background-color: #007bff;
     color: #fff;
@@ -22,12 +22,15 @@ input[type="file"] {
     content: "Select a file";
   }
   .overlay-layer{
+    display: flex;
+    justify-content: center;
+    position: absolute;
     height:50px;
     width:200px;
-    left:0;
+    /* left:0;
     top:0;
     right:0;
-    bottom:0;
+    bottom:0; */
     background-color: black;
     z-index: 99999;
     opacity: 0.8;
@@ -39,4 +42,8 @@ input[type="file"] {
     font-size: 16px;
     cursor: pointer;
     display: inline-block;
+  }
+  .init-background{
+    border : 1px dashed gray;
+    height: 300px;
   }
