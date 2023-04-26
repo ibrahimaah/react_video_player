@@ -26,15 +26,17 @@ input[type="file"] {
     justify-content: center;
     position: absolute;
     height:50px;
-    width:200px;
-    /* left:0;
-    top:0;
-    right:0;
-    bottom:0; */
+    width:400px;
     background-color: black;
     z-index: 99999;
     opacity: 0.8;
     overflow: hidden;
+    /* overflow-wrap: break-word; */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-all;
+    word-break: break-word;
+    hyphens: auto;
   }
   .btn-play-pause{
     padding: 12px 24px;
@@ -45,5 +47,51 @@ input[type="file"] {
   }
   .init-background{
     border : 1px dashed gray;
-    height: 300px;
+  }
+
+
+
+
+
+
+
+  .btn-direction {
+    display: inline-block;
+    padding: 20px 30px;
+    border: none;
+    background-color: #f1f1f1;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: relative;
+  }
+  
+  .btn-direction:hover {
+    background-color: #ddd;
+  }
+  .btn-direction::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 6px 0 6px;
+    border-color: #333 transparent transparent transparent;
+  }
+  .btn-direction.left::before {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+  .btn-direction.right::before {
+    transform: translate(-50%, -50%) rotate(-90deg);
+  }
+  .btn-direction.top::before {
+    transform: translate(-50%, -50%) rotate(180deg);
+  }
+  .btn-direction.bottom::before {
+    transform: translate(-50%, -50%);
   }

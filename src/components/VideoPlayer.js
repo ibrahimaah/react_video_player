@@ -1,46 +1,88 @@
 import { useEffect, useRef, useState } from 'react';
 import './VideoPlayer.css'
+import Direction from './Direction';
+
 
 const initText = {
   content:'',
-  color:'white',
-  fontSize:'15px',
-  positionLeft:0,
-  positionTop:0
+  color:'#ffffff',
+  fontSize:15,
+  left:0,
+  top:0
 };
 
 export default function VideoPlayer() {
-    
-  const [videoUrl, setVideoUrl] = useState(null);
-  // const [loading , setLoading] = useState(false);
-  const [playing, setPlaying] = useState(false);
+
   const videoRef = useRef(null);
+  //The column that contains the video
+  const colVideoRef = useRef(null);
+
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [playing, setPlaying] = useState(false);
   const [text,setText] = useState(initText);
-  console.log(text)
+
+
+  //set initial position of the overlay div to be center top of the video
+  //The following code will be executed just once because the dependency array is empty
+  useEffect(()=>{
+    setText(prevText => {
+      return {...prevText,left:(colVideoRef.current.offsetWidth - 400) /2,top:20}
+    });
+  },[]);
 
   function handleVideoChange(e) {
+
     if (e.target.files.length !== 0) {
-        let file = URL.createObjectURL(e.target.files[0]);
-        setVideoUrl(file);
-      } 
+
+      setPlaying(false);
+      let file = e.target.files[0];
+
+      if (!file.type.includes('video/')) {
+        alert('Please select a video file.');
+        e.target.value = '';
+      }else{
+        setVideoUrl(URL.createObjectURL(file));  
+      }
+      
+    } 
   }
 
-  //for performance purposes
-  useEffect(() => {
-    return () => {
-      if (videoUrl) {
-        URL.revokeObjectURL(videoUrl);
-      }
-    };
-  }, [handleVideoChange]);
-
   function handleTextChange(e){
-    if(e.target.name === 'positionLeft' || e.target.name === 'positionTop'){
-        setText(prevText => { return {...prevText,[e.target.name]:e.target.value+'px'} });
-    }else{
-        setText(prevText => { return {...prevText,[e.target.name]:e.target.value} });
+    setText(prevText => { return {...prevText,[e.target.name]:e.target.value} }); 
+  }
+
+  function handleDirectionChange(e){
+    switch (e.target.name) {
+      case 'btnLeft':
+        setText(prevText => { 
+          if (prevText.left <= 0) {
+            return prevText;
+          }
+          return {...prevText,
+                  left:prevText.left - 5} }); 
+        break;
+      case 'btnRight':
+        setText(prevText => { 
+          return {...prevText,
+                  left:prevText.left + 5} }); 
+        break;
+      case 'btnTop':
+        setText(prevText => { 
+          if (prevText.top <= 0) {
+            return prevText;
+          }
+          return {...prevText,
+                  top:prevText.top - 5} }); 
+        break;
+      case 'btnBottom':
+        setText(prevText => { 
+          return {...prevText,
+                  top:prevText.top + 5} }); 
+        break;
+      default:
+        setText(prevText => prevText);
+        break;
     }
-    
   }
 
   function handlePlayPause(){
@@ -53,37 +95,68 @@ export default function VideoPlayer() {
       setPlaying(false);
     }
   }
+
+  function handleReset(){
+      setVideoUrl(null);
+      setPlaying(false);
+      setText(prevText => {
+        return {...initText,left:prevText.left,top:prevText.top}
+      });
+  }
+  function handleClickToReset(e){
+    e.target.value = '';
+  }
+
   return (
     <div className='container'>
-      <div className='row justify-content-center align-items-center'  style={{height:'600px'}}>
+      <div className='row justify-content-center'>
 
-        <h2 className="display-3 text-success fw-bold text-center">React Video Player App</h2>
+        <h2 className="display-3 text-primary fw-bold text-center my-4">React Video Player App</h2>
 
-        <div className='col-xs-12 col-md-6'>
-            <div className='position-relative overflow-hidden w-100' style={{height:'300px'}}>
+        <div className='col-12 col-md-6' ref={colVideoRef} id='col'>
+
+            <div className='position-relative overflow-hidden w-100' 
+                 style={{height:'400px',
+                        maxHeight:'400px',
+                        overflow:'hidden'}}>
+            
+             
                 
                 {
-                    videoUrl && (
-                                  <div>
-                                    <video className='w-100' height="300" src={videoUrl} ref={videoRef}>
-                                        
-                                        Your browser does not support the video tag.
-                                    </video>
-                                    {
-                                        text.content && (
-                                            <div 
-                                                className='overlay-layer'
-                                                style={{left:text.positionLeft,
-                                                        top:text.positionTop,}}>
-                                                <p style={{color:text.color}}>{text.content}</p>
-                                            </div>
-                                        )
-                                    }
-                                </div>) || (<div className='w-100 init-background'></div>)
+
+                  videoUrl && (
+                                <div>
+                                  <video 
+                                      className='w-100 h-100'
+                                      src={videoUrl}
+                                      ref={videoRef}
+                                      type="video/*"
+                                      loop>
+                                      Your browser does not support the video tag.
+                                  </video>
+
+                                  {
+                                      text.content && (
+                                          <div 
+                                              className='overlay-layer text-wrap'
+                                              style={{
+                                                      left:text.left,
+                                                      top:text.top
+                                                      }}>
+                                              <p style={{color:text.color,
+                                                        fontSize:`${text.fontSize}px`
+                                                        }}>
+                                                {text.content}
+                                              </p>
+                                          </div>
+                                      )
+                                  }
+                              </div>) || (<div className='w-100 h-100 init-background'></div>)
                 }
                     
                     
             </div>
+
             <div className='d-flex justify-content-between'>
                 
                 <div className="custom-file my-3">
@@ -93,6 +166,8 @@ export default function VideoPlayer() {
                         className="custom-file-input"
                         id="customFile" 
                         onChange={handleVideoChange} 
+                        onClick={handleClickToReset}
+                        multiple={false}
                     />
                     <label 
                         className="custom-file-label" 
@@ -113,65 +188,64 @@ export default function VideoPlayer() {
                     )
                 }
             </div>
+
         </div>
-        <div className='col-xs-12 col-md-6 border p-3 my-4'>
+        {
+          videoUrl && (
+              <div className='col-12 col-md-6 border p-3 my-4'>
 
-              <div className="container">
+                <div className="container">
 
-                <div className="row align-items-center">
+                  <div className="row align-items-center">
 
-                  <div className="col-xs-12 col-md-6">
-                    <label className='form-label'>Add Text</label>
-                    <input type="text" name='content' className="form-control" onChange={handleTextChange}/>
+                    <div className="col-12 col-md-6 my-3">
+                      <label className='form-label'>Add Text</label>
+                      <input type="text" name='content' className="form-control" onChange={handleTextChange}/>
+                    </div>
+
+                    <div className="col-12 col-md-6 my-3">
+                    <label className='form-label'>Select Font Size</label>
+                      <select 
+                        className="form-select" 
+                        name='fontSize' 
+                        onChange={handleTextChange}
+                        value={text.fontSize}>
+                        <option value="15">15px</option>
+                        <option value="20">20px</option>
+                        <option value="25">25px</option>
+                      </select>                                              
+                    </div>
+
                   </div>
-
-                  <div className="col-xs-12 col-md-6">                        
-                    <label className='form-label'>Position: Top/Bottom</label>
-                    <input 
-                      type="number"
-                      name='positionTop'
-                      className="form-control"
-                      value={text.top}
-                      onChange={handleTextChange}
-                    />                                                  
-                  </div>
-
                 </div>
-              </div>
 
-              <div className="container">
-                <div className="row align-items-center">
+                <div className="container">
+                  <div className="row align-items-center">
 
-                  
-                  <div className="col-xs-12 col-md-6">
-                    <label className='form-label'>Choose Text Color</label>
-                    <input 
-                        type="color"
-                        name='color' 
-                        className="form-control form-control-color"
-                        value={text.color}
-                        onChange={handleTextChange}/>
-                    
+                    <div className="col-12 col-md-6 my-3">
+                      <label className='form-label'>Choose Text Color</label>
+                      <input 
+                          type="color"
+                          name='color' 
+                          className="form-control form-control-color"
+                          value={text.color}
+                          onChange={handleTextChange}/>
+                    </div>
+
+                    <div className="col-12 col-md-6 my-3">
+                      {text.content && <Direction onClickArrow={handleDirectionChange}/>}
+                    </div>
+
                   </div>
-
-                  <div className="col-xs-12 col-md-6">
-                    <label className='form-label'>Position: Left/Right</label>
-                    <input 
-                      type="number"
-                      name='positionLeft'
-                      className="form-control"
-                      value={text.left}
-                      onChange={handleTextChange}
-                    />
-                  </div>
-
                 </div>
-              </div>
-              
-        </div>
+                
+          </div>
+          )
+        }
+        
       </div>
+      <button className='btn btn-lg btn-danger my-3 w-25' onClick={handleReset}>Reset</button>
     </div>
   );
 }
-
  
