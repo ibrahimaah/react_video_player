@@ -17,10 +17,11 @@ export default function VideoPlayer() {
   //The column that contains the video
   const colVideoRef = useRef(null);
 
+
   const [videoUrl, setVideoUrl] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [text,setText] = useState(initText);
-
+  
 
   //set initial position of the overlay div to be center top of the video
   //The following code will be executed just once because the dependency array is empty
@@ -56,26 +57,34 @@ export default function VideoPlayer() {
       case 'btnLeft':
         setText(prevText => { 
           if (prevText.left <= 0) {
-            return prevText;
+            return {...prevText,left:initText.left};
           }
           return {...prevText,
                   left:prevText.left - 5} }); 
         break;
       case 'btnRight':
         setText(prevText => { 
+          //width of column = 400 , padding-left:12 , padding-right:12
+          if (prevText.left > (colVideoRef.current.offsetWidth - 424)) {
+            return {...prevText,left:colVideoRef.current.offsetWidth - 424};
+          }
           return {...prevText,
                   left:prevText.left + 5} }); 
         break;
       case 'btnTop':
         setText(prevText => { 
           if (prevText.top <= 0) {
-            return prevText;
+            return {...prevText,top:initText.top};
           }
           return {...prevText,
                   top:prevText.top - 5} }); 
         break;
       case 'btnBottom':
         setText(prevText => { 
+          //350 because 400 is the height of the div and 50 is the height of the overlay
+          if (prevText.top > 350) {
+            return {...prevText,top:350};
+          }
           return {...prevText,
                   top:prevText.top + 5} }); 
         break;
@@ -115,18 +124,15 @@ export default function VideoPlayer() {
 
         <div className='col-12 col-md-6' ref={colVideoRef} id='col'>
 
-            <div className='position-relative overflow-hidden w-100' 
+            <div className='position-relative w-100' 
                  style={{height:'400px',
                         maxHeight:'400px',
                         overflow:'hidden'}}>
-            
-             
-                
                 {
 
-                  videoUrl && (
+                  (videoUrl && (
                                 <div>
-                                  <video 
+                                  <video
                                       className='w-100 h-100'
                                       src={videoUrl}
                                       ref={videoRef}
@@ -151,7 +157,7 @@ export default function VideoPlayer() {
                                           </div>
                                       )
                                   }
-                              </div>) || (<div className='w-100 h-100 init-background'></div>)
+                              </div>)) || (<div className='w-100 h-100 init-background'></div>)
                 }
                     
                     
